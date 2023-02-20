@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.tcc": "cpp",
+        "streambuf": "cpp",
+        "unordered_map": "cpp",
+        "initializer_list": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "ranges": "cpp",
+        "cstddef": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
