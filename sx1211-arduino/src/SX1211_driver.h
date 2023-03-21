@@ -466,8 +466,9 @@ public:
 
     bool hasAvailableData();
 
-    void receive();
-    void transmit();
+    // return read bytes.
+    byte receive(byte *received);
+    void transmit(byte size, byte to, byte *payload);
 
 private:
     static void SX_1211_IRQ0(void *p);

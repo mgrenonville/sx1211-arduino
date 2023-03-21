@@ -67,18 +67,18 @@ void setup()
     sx1211.writeRawConfig(0x3E / 2, 0x00);
     sx1211.writeRawConfig(0x00 / 2, 0x10);
 
-    sx1211.writeRawConfig(0x2C / 2, 0x05); // Satellite value.
-    sx1211.writeRawConfig(0x2E / 2, 0xdb);
-    sx1211.writeRawConfig(0x30 / 2, 0xe7);
-    sx1211.writeRawConfig(0x32 / 2, 0x6b);
-    sx1211.writeRawConfig(0x3A / 2, 0x01); // Address 0x01
+    sx1211.writeRawConfig(0x2C / 2, 0x05); // Satellite value.05da2ee2
+    sx1211.writeRawConfig(0x2E / 2, 0xda);
+    sx1211.writeRawConfig(0x30 / 2, 0x2e);
+    sx1211.writeRawConfig(0x32 / 2, 0xe2);
+    sx1211.writeRawConfig(0x3A / 2, 0x08); // Address 0x80, chaudiere
     sx1211.writeRawConfig(0x00 / 2, 0x30);
 
     // disable address filtering.
-    sx1211.writeRawConfig(30, 0xE8);
+    sx1211.writeRawConfig(SX1211_REG_PKTPARAM3, 0xE8);
+    // sx1211.writeRawConfig(SX1211_REG_MCPARAM2, SX_1211_MC2_MODULATION_FSK | SX_1211_MC2_DATA_MODE_PACKET | SX_1211_MC2_OOK_THRESH_TYPE_PEAK | SX_1211_MC2_GAIN_IF_00); // Mode packet
 
     // crc off
-    // sx1211.writeRawConfig(30, 0xE0);
 
     sx1211.sendConfig();
     sx1211.setMode(SX1211_MODE_SLEEP);
@@ -91,20 +91,62 @@ void setup()
     showConfig();
 }
 
+void parse(byte *data)
+{
+    // SIZE:11 TO:80 FROM:08 19 TRAME?:00 01 17 a0 29 00 15 a0 VAR:2f 00 01 02 00 192
+
+    byte from = data[2];
+
+    if (from == 0x09) // Z2
+    {
+        byte buffer[] = {128, data[3], 0, 0x81, data[6], 42, 5, 10, 0, 0, 35, 2, 35, 33, 65, 19, 8, 4, 0, 192, 0, 190, 0, 37, 1, 59, 1, 59, 4, 246, 0, 0, 0, 0, 0, 0, 0, 0, 4, 246, 0, 0, 0, 0, 0, 0, 0, 0};
+        sx1211.transmit(49 - 1, 9, buffer);
+    }
+}
+
 void loop()
 {
 
-    sx1211.setMode(SX1211_MODE_FS);
-    delay(1);
-
-    sx1211.setMode(SX1211_MODE_RX);
-
-    while (!sx1211.hasAvailableData())
-    {
-        delay(1000);
-    }
-    sx1211.receive();
     sx1211.setMode(SX1211_MODE_SLEEP);
 
-    delay(100);
+    byte length = 0;
+
+    byte data[64];
+
+    while (Serial.available() == 0)
+    {
+        Serial.println("Waiting data");
+        delay(1000);
+    }
+
+    if (Serial.available() > 0)
+    {
+        length = Serial.read();
+        if (length > 0)
+        {
+            byte to = Serial.read();
+            Serial.printf("Available data, %02X %02X ", length, to);
+            Serial.readBytes(data, length - 1);
+            sx1211.transmit(length, to, data);
+            for (int i = 0; i < length - 1; i++)
+            {
+                Serial.printf("%02X ", data[i]);
+            }
+            Serial.println("");
+        }
+    }
+    // sx1211.setMode(SX1211_MODE_FS);
+    // delay(1);
+
+    // sx1211.setMode(SX1211_MODE_RX);
+
+    // while (!sx1211.hasAvailableData())
+    // {
+    //     delay(1000);
+    // }
+    // byte read = sx1211.receive(data);
+    // for (int i = 0; i <= read; i++)
+    // {
+    //     Serial.printf("%02X ", data[i]);
+    // }
 }

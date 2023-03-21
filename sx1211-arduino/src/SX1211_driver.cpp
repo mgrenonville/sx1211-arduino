@@ -5,7 +5,7 @@
 #include "SX1211_driver.h"
 
 #define READ_WRITE_BYTE 1 << 6
-#define LOG_DEBUG 0
+#define LOG_DEBUG 1
 
 void IRAM_ATTR SX1211_Driver::SX_1211_IRQ0(void *p)
 {
@@ -173,7 +173,7 @@ void SX1211_Driver::set_fifo_stby_access(bool value)
     spi->endTransaction();
 };
 
-void SX1211_Driver::receive()
+byte SX1211_Driver::receive(byte *received)
 {
 
     setMode(SX1211_MODE_STBY);
@@ -184,28 +184,71 @@ void SX1211_Driver::receive()
     delay(1);
     set_fifo_stby_access(true);
     delay(1);
-    // if (LOG_DEBUG)
+    if (LOG_DEBUG)
     {
         Serial.printf("Received at (crc_ok: %d,crc_on: %d) %d dB: ", (crc_status & SX_1211_PKT3_CRC_STATUS) == SX_1211_PKT3_CRC_STATUS, (crc_status & SX_1211_PKT3_CRC_ON) == SX_1211_PKT3_CRC_ON, rssi);
     }
-
+    byte i = 0;
     while (notFifoEmpty)
     {
+
         spi->beginTransaction(settings);
         int data = readWriteData(0x00);
 
-        // if (LOG_DEBUG)
+        if (LOG_DEBUG)
         {
             Serial.printf("%02X ", data);
+            received[i] = data;
         }
         spi->endTransaction();
+        i++;
     }
-    // if (LOG_DEBUG)
+    if (LOG_DEBUG)
     {
         Serial.printf("\n");
     }
+    return i - 1;
 };
 
-void SX1211_Driver::transmit(){};
+void SX1211_Driver::transmit(byte size, byte to, byte *payload)
+{
+    // prepare transmit
+    setMode(SX1211_MODE_STBY);
+    set_fifo_stby_access(false);
+
+    spi->beginTransaction(settings);
+    // if (LOG_DEBUG)
+    {
+        Serial.printf("Prepare transmit %d bytes to %02X\n", size, to);
+    }
+    readWriteData(size + 1); // include to addr
+    readWriteData(to);
+    for (int i = 0; i < size -1 ; i++)
+    {
+        readWriteData(payload[i]);
+        // if (LOG_DEBUG)
+        {
+            Serial.printf("%02X ", payload[i]);
+        }
+    }
+
+    spi->endTransaction();
+    setMode(SX1211_MODE_FS);
+    delay(10);
+    setMode(SX1211_MODE_TX);
+    // if (LOG_DEBUG)
+    {
+        Serial.printf("transmitting");
+    }
+    while (!crcOk)
+    {
+        delay(10);
+    }
+    // if (LOG_DEBUG)
+    {
+        Serial.printf("transmittion done \n");
+    }
+    setMode(SX1211_MODE_STBY);
+};
 
 #endif
