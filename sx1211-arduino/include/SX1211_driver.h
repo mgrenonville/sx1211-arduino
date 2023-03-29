@@ -298,6 +298,8 @@
 
 // Sync word recognition
 // Automatically activated in Packet mode
+#define SX_1211_RX3_SYNC_WORD_REC 0x20
+
 
 // Size of the reference sync word
 #define SX_1211_RX3_SYNC_SIZE_8 0x00
@@ -461,6 +463,8 @@ public:
     void sendConfig();
 
     void setMode(uint8_t mode);
+    void setSyncWord(byte *syncword, byte syncword_size);
+    void setAddress(byte addr);
 
     void receivedData();
 

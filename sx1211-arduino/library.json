@@ -1,0 +1,26 @@
+{
+    "name": "sx1211-arduino",
+    "version": "0.0.1",
+    "description": "A driver for Semtech sx1211 / hopeRF rfm63",
+    "keywords": "RF, sx1211, rfm63, 433mhz, 868mhz, 915mhz",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/mgrenonville/sx1211-arduino"
+    },
+    "authors":
+    [
+      {
+        "name": "Mathieu Grenonville",
+        "email": "mathieugrenonville@gmail.com",
+        "url": "http://www.blogouillage.net",
+        "maintainer": true
+      }
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/mgrenonville/sx1211-arduino",
+    "dependencies": {
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif8266"
+  }

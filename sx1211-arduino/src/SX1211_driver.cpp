@@ -64,6 +64,36 @@ void SX1211_Driver::begin(SPIClass &spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DAT
     settings = SPISettings(1052673 / 2, MSBFIRST, SPI_MODE0);
 };
 
+void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
+{
+    for (byte i = 0; i < syncword_size; i++)
+    {
+        this->writeRawConfig(SX1211_REG_SYNCBYTE1 + i, syncword[i]);
+    }
+    byte rx3Value = SX_1211_RX3_SYNC_TOL_0 | SX_1211_RX3_POLYPFILT_OFF | SX_1211_RX3_SYNC_WORD_REC;
+    switch (syncword_size)
+    {
+    case 1:
+        rx3Value |= SX_1211_RX3_SYNC_SIZE_8;
+        break;
+    case 2:
+        rx3Value |= SX_1211_RX3_SYNC_SIZE_16;
+        break;
+    case 3:
+        rx3Value |= SX_1211_RX3_SYNC_SIZE_24;
+        break;
+    case 4:
+        rx3Value |= SX_1211_RX3_SYNC_SIZE_32;
+        break;
+    }
+    this->writeConfig(SX1211_REG_RXPARAM3, rx3Value);
+};
+
+void SX1211_Driver::setAddress(byte addr)
+{
+    this->writeConfig(SX1211_REG_NODEADRS, addr);
+};
+
 void SX1211_Driver::writeRawConfig(byte address, byte value)
 {
     config[address] = value;
@@ -223,7 +253,7 @@ void SX1211_Driver::transmit(byte size, byte to, byte *payload)
     }
     readWriteData(size + 1); // include to addr
     readWriteData(to);
-    for (int i = 0; i < size -1 ; i++)
+    for (int i = 0; i < size - 1; i++)
     {
         readWriteData(payload[i]);
         // if (LOG_DEBUG)
