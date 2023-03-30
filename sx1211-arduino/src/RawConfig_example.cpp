@@ -34,51 +34,54 @@ void setup()
     showConfig();
 
     Serial.write("Writing my config\n");
-    sx1211.writeRawConfig(0x00 / 2, 0x30);
-    sx1211.writeRawConfig(0x02 / 2, 0x8C);
-    sx1211.writeRawConfig(0x04 / 2, 0x07);
-    sx1211.writeRawConfig(0x06 / 2, 0x07);
-    sx1211.writeRawConfig(0x08 / 2, 0x0C);
-    sx1211.writeRawConfig(0x0A / 2, 0xCF);
-    sx1211.writeRawConfig(0x0C / 2, 0x7F);
-    sx1211.writeRawConfig(0x0E / 2, 0x65);
-    sx1211.writeRawConfig(0x10 / 2, 0x4A);
-    sx1211.writeRawConfig(0x12 / 2, 0x77);
-    sx1211.writeRawConfig(0x14 / 2, 0x5F);
-    sx1211.writeRawConfig(0x16 / 2, 0x19);
-    sx1211.writeRawConfig(0x18 / 2, 0x38);
-    sx1211.writeRawConfig(0x1A / 2, 0x88);
-    sx1211.writeRawConfig(0x1C / 2, 0x19);
-    sx1211.writeRawConfig(0x1E / 2, 0x82);
-    sx1211.writeRawConfig(0x20 / 2, 0xE3);
-    sx1211.writeRawConfig(0x22 / 2, 0x38);
-    sx1211.writeRawConfig(0x24 / 2, 0x38);
-    sx1211.writeRawConfig(0x26 / 2, 0x07);
-    sx1211.writeRawConfig(0x2A / 2, 0x00);
-    sx1211.writeRawConfig(0x2C / 2, 0x12);
-    sx1211.writeRawConfig(0x2E / 2, 0x34);
-    sx1211.writeRawConfig(0x30 / 2, 0x56);
-    sx1211.writeRawConfig(0x32 / 2, 0x78);
-    sx1211.writeRawConfig(0x34 / 2, 0x50);
-    sx1211.writeRawConfig(0x36 / 2, 0x3C);
-    sx1211.writeRawConfig(0x38 / 2, 0x40);
-    sx1211.writeRawConfig(0x3A / 2, 0xFF);
-    sx1211.writeRawConfig(0x3C / 2, 0xEC);
-    sx1211.writeRawConfig(0x3E / 2, 0x00);
-    sx1211.writeRawConfig(0x00 / 2, 0x10);
+    // sx1211.writeRawConfig(SX1211_REG_MCPARAM1, 0x30);
+    sx1211.writeRawConfig(SX1211_REG_MCPARAM1, SX_1211_MC1_BAND_868 | SX_1211_MC1_RPS_SELECT_1 | SX_1211_MC1_VCO_TRIM_00 | SX_1211_MC1_SLEEP);
+    // sx1211.writeRawConfig(SX1211_REG_MCPARAM2, 0x8C);
+    sx1211.writeRawConfig(SX1211_REG_MCPARAM2, SX_1211_MC2_MODULATION_FSK | SX_1211_MC2_DATA_MODE_PACKET | SX_1211_MC2_OOK_THRESH_TYPE_PEAK | SX_1211_MC2_GAIN_IF_00); // Mode packet
 
-    sx1211.writeRawConfig(0x2C / 2, 0x05); // Satellite value.05da2ee2
-    sx1211.writeRawConfig(0x2E / 2, 0xda);
-    sx1211.writeRawConfig(0x30 / 2, 0x2e);
-    sx1211.writeRawConfig(0x32 / 2, 0xe2);
-    sx1211.writeRawConfig(0x3A / 2, 0x08); // Address 0x80, chaudiere
-    sx1211.writeRawConfig(0x00 / 2, 0x30);
+    // sx1211.writeRawConfig(SX1211_REG_FDEV, 0x07);
+    sx1211.writeRawConfig(SX1211_REG_FDEV, SX_1211_FDEV_50);
+
+    // sx1211.writeRawConfig(SX1211_REG_BITRATE, 0x07);
+    sx1211.writeRawConfig(SX1211_REG_BITRATE, SX_1211_BITRATE_25000);
+
+    // sx1211.writeRawConfig(SX1211_REG_OOKFLOORTHRESH, 0x0C);
+    sx1211.writeRawConfig(SX1211_REG_OOKFLOORTHRESH, SX_1211_OOKFLOORTHRESH_VALUE);
+
+    // sx1211.writeRawConfig(SX1211_REG_MCPARAM6, 0xCF);
+    sx1211.writeRawConfig(SX1211_REG_MCPARAM6, SX_1211_MC6_FIFO_SIZE_64 | SX_1211_MC6_FIFO_THRESH_VALUE);
+
+    // Configured values for my usecase
+    sx1211.writeRawConfig(SX1211_REG_R1, 0x7F);
+    sx1211.writeRawConfig(SX1211_REG_P1, 0x65);
+    sx1211.writeRawConfig(SX1211_REG_S1, 0x4A);
+    sx1211.writeRawConfig(SX1211_REG_R2, 0x77);
+    sx1211.writeRawConfig(SX1211_REG_P2, 0x5F);
+    sx1211.writeRawConfig(SX1211_REG_S2, 0x19);
+
+    // For OOK, not usefull
+    sx1211.writeRawConfig(SX1211_REG_PARAMP, 0x38);
+
+    // sx1211.writeRawConfig(SX1211_REG_IRQPARAM1, 0x88);
+    sx1211.writeRawConfig(SX1211_REG_IRQPARAM1, SX_1211_IRQ0_RX_STDBY_FIFOEMPTY | SX_1211_IRQ1_RX_STDBY_CRCOK | SX_1211_IRQ1_TX_TXDONE);
+
+    sx1211.writeRawConfig(SX1211_REG_IRQPARAM2, 0x19);
+
+    sx1211.writeRawConfig(SX1211_REG_RSSIIRQTHRESH, 0x82);
+    sx1211.writeRawConfig(SX1211_REG_RXPARAM1, 0xE3);
+    sx1211.writeRawConfig(SX1211_REG_RXPARAM2, 0x38);
+
+    // sx1211.writeRawConfig(SX1211_REG_RXPARAM3, 0x38);
+    byte network_id[] = {0x12, 0x34, 0x56, 0x78};
+    sx1211.setSyncWord(network_id, 4);
+
+    sx1211.writeRawConfig(SX1211_REG_RES19, 0x07);
+    sx1211.writeRawConfig(SX1211_REG_RXPARAM6, 0x00);
+
+    sx1211.setAddress(0x08); // Address 0x80, chaudiere
 
     // disable address filtering.
     sx1211.writeRawConfig(SX1211_REG_PKTPARAM3, 0xE8);
-    // sx1211.writeRawConfig(SX1211_REG_MCPARAM2, SX_1211_MC2_MODULATION_FSK | SX_1211_MC2_DATA_MODE_PACKET | SX_1211_MC2_OOK_THRESH_TYPE_PEAK | SX_1211_MC2_GAIN_IF_00); // Mode packet
-
-    // crc off
 
     sx1211.sendConfig();
     sx1211.setMode(SX1211_MODE_SLEEP);
@@ -91,50 +94,37 @@ void setup()
     showConfig();
 }
 
-void parse(byte *data)
+
+void transmit(byte *buf)
 {
-    // SIZE:11 TO:80 FROM:08 19 TRAME?:00 01 17 a0 29 00 15 a0 VAR:2f 00 01 02 00 192
-
-    byte from = data[2];
-
-    if (from == 0x09) // Z2
-    {
-        byte buffer[] = {128, data[3], 0, 0x81, data[6], 42, 5, 10, 0, 0, 35, 2, 35, 33, 65, 19, 8, 4, 0, 192, 0, 190, 0, 37, 1, 59, 1, 59, 4, 246, 0, 0, 0, 0, 0, 0, 0, 0, 4, 246, 0, 0, 0, 0, 0, 0, 0, 0};
-        sx1211.transmit(49 - 1, 9, buffer);
-    }
+    sx1211.transmit(buf[0] - 1, buf[1], buf + 2);
 }
+
 
 void loop()
 {
 
-    sx1211.setMode(SX1211_MODE_SLEEP);
+//    // first.
+    byte buf[] = {0x3f, 0x80, 0x08, 0xbe, 0xe4, 0x7e, 0x17, 0xa1, 0x54, 0x00, 0x15, 0xa1, 0x54, 0x00, 0x18, 0x30, 0x96, 0x82, 0x00, 0x08, 0x10, 0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0xff, 0xff, 0xff, 0x0f, 0x00, 0xc0, 0x33, 0x66, 0x38, 0x30};
 
-    byte length = 0;
-
-    byte data[64];
-
-    while (Serial.available() == 0)
+    transmit(buf);
+    delay(100);
+    
+    byte buff[64];
+    for (byte size = 1; size < 63; size++)
     {
-        Serial.println("Waiting data");
-        delay(1000);
-    }
-
-    if (Serial.available() > 0)
-    {
-        length = Serial.read();
-        if (length > 0)
+        // for (byte j = 0x55; j < 0xAA; j++)
         {
-            byte to = Serial.read();
-            Serial.printf("Available data, %02X %02X ", length, to);
-            Serial.readBytes(data, length - 1);
-            sx1211.transmit(length, to, data);
-            for (int i = 0; i < length - 1; i++)
+            for (byte k = 0; k < size; k++)
             {
-                Serial.printf("%02X ", data[i]);
+                
             }
-            Serial.println("");
+            delay(1000);
+            sx1211.transmit(size, 0x08, buf);
         }
     }
+
+    delay(1000000);
     // sx1211.setMode(SX1211_MODE_FS);
     // delay(1);
 
@@ -142,11 +132,14 @@ void loop()
 
     // while (!sx1211.hasAvailableData())
     // {
-    //     delay(1000);
+    // delay(100000);
     // }
+    // byte data[64];
     // byte read = sx1211.receive(data);
     // for (int i = 0; i <= read; i++)
     // {
     //     Serial.printf("%02X ", data[i]);
     // }
+    // parse(data);
+    sx1211.setMode(SX1211_MODE_SLEEP);
 }

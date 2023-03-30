@@ -240,6 +240,7 @@ byte SX1211_Driver::receive(byte *received)
     return i - 1;
 };
 
+
 void SX1211_Driver::transmit(byte size, byte to, byte *payload)
 {
     // prepare transmit
@@ -253,7 +254,7 @@ void SX1211_Driver::transmit(byte size, byte to, byte *payload)
     }
     readWriteData(size + 1); // include to addr
     readWriteData(to);
-    for (int i = 0; i < size - 1; i++)
+    for (int i = 0; i < size - 2; i++)
     {
         readWriteData(payload[i]);
         // if (LOG_DEBUG)
@@ -263,6 +264,7 @@ void SX1211_Driver::transmit(byte size, byte to, byte *payload)
     }
 
     spi->endTransaction();
+    delay(40);
     setMode(SX1211_MODE_FS);
     delay(10);
     setMode(SX1211_MODE_TX);
