@@ -241,7 +241,7 @@ byte SX1211_Driver::receive(byte *received)
 };
 
 
-void SX1211_Driver::transmit(byte size, byte to, byte *payload)
+void SX1211_Driver::transmit(byte size, byte *payload)
 {
     // prepare transmit
     setMode(SX1211_MODE_STBY);
@@ -250,11 +250,10 @@ void SX1211_Driver::transmit(byte size, byte to, byte *payload)
     spi->beginTransaction(settings);
     // if (LOG_DEBUG)
     {
-        Serial.printf("Prepare transmit %d bytes to %02X\n", size, to);
+        Serial.printf("Prepare transmit %d bytes to %02X\n", size, payload[0]);
     }
-    readWriteData(size + 1); // include to addr
-    readWriteData(to);
-    for (int i = 0; i < size - 2; i++)
+    readWriteData(size);
+    for (int i = 0; i < size; i++)
     {
         readWriteData(payload[i]);
         // if (LOG_DEBUG)
