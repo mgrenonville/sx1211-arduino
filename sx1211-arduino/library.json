@@ -20,6 +20,7 @@
     "license": "MIT",
     "homepage": "https://github.com/mgrenonville/sx1211-arduino",
     "dependencies": {
+      
     },
     "frameworks": "arduino",
     "platforms": "espressif8266"
