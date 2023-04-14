@@ -222,6 +222,10 @@ void configureSX1211()
   byte network_id[] = {0x12, 0x34, 0x56, 0x78};
   sx1211.setSyncWord(network_id, 4);
 
+  sx1211.writeRawConfig(SX1211_REG_TXPARAM, 0x50);
+  sx1211.writeRawConfig(SX1211_REG_PKTPARAM1, 0x40);
+  sx1211.writeRawConfig(SX1211_REG_OSCPARAM, 0x3c);
+
   sx1211.writeRawConfig(SX1211_REG_RES19, 0x07);
   sx1211.writeRawConfig(SX1211_REG_RXPARAM6, 0x00);
 
@@ -314,5 +318,4 @@ void loop()
     helper::conversion::ByteBuffer payload = helper::conversion::unhexlify(payloadStr.c_str());
     sx1211.transmit(payload.size() - 1, &payload[0]);
   }
-  delay(1000);
 }

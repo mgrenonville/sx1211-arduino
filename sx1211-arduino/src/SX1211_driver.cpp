@@ -72,6 +72,7 @@ void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
         this->writeRawConfig(SX1211_REG_SYNCBYTE1 + i, syncword[i]);
     }
     byte rx3Value = SX_1211_RX3_SYNC_TOL_0 | SX_1211_RX3_POLYPFILT_OFF | SX_1211_RX3_SYNC_WORD_REC;
+    Serial.printf("Updating syncword: size: %d", syncword_size);
     switch (syncword_size)
     {
     case 1:
@@ -87,14 +88,12 @@ void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
         rx3Value |= SX_1211_RX3_SYNC_SIZE_32;
         break;
     }
-    spi->beginTransaction(this->settings);
-    this->writeConfig(SX1211_REG_RXPARAM3, rx3Value);
-    spi->endTransaction();
+    this->writeRawConfig(SX1211_REG_RXPARAM3, rx3Value);    
 };
 
 void SX1211_Driver::setAddress(byte addr)
 {
-    this->writeConfig(SX1211_REG_NODEADRS, addr);
+    this->writeRawConfig(SX1211_REG_NODEADRS, addr);
 };
 
 void SX1211_Driver::writeRawConfig(byte address, byte value)
