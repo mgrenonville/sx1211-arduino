@@ -5,7 +5,6 @@
 #include "SX1211_driver.h"
 
 #define READ_WRITE_BYTE 1 << 6
-#define LOG_DEBUG 1
 
 void IRAM_ATTR SX1211_Driver::SX_1211_IRQ0(void *p)
 {
@@ -54,14 +53,16 @@ void SX1211_Driver::begin(SPIClass &spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DAT
     this->notFifoEmpty = digitalRead(IRQ_0_PIN);
 
     pinMode(IRQ_1_PIN, INPUT);
-    if (LOG_DEBUG)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("IRQ1 is interruptable ? %d", digitalPinToInterrupt(IRQ_1_PIN) != NOT_AN_INTERRUPT);
     }
     attachInterruptArg(digitalPinToInterrupt(IRQ_1_PIN), SX_1211_IRQ1, this, CHANGE);
     this->crcOk = digitalRead(IRQ_1_PIN);
     // 1052673 / 2 = ~500khz CLK, looks like frisquet
-    settings = SPISettings(1052673 / 2, MSBFIRST, SPI_MODE0);
+    settings = SPISettings(1052673 / 2 / 2 / 2, MSBFIRST, SPI_MODE0);
+
+    readConfig();
 };
 
 void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
@@ -86,7 +87,9 @@ void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
         rx3Value |= SX_1211_RX3_SYNC_SIZE_32;
         break;
     }
+    spi->beginTransaction(this->settings);
     this->writeConfig(SX1211_REG_RXPARAM3, rx3Value);
+    spi->endTransaction();
 };
 
 void SX1211_Driver::setAddress(byte addr)
@@ -112,44 +115,59 @@ byte SX1211_Driver::readConfigByte(byte address)
 {
     byte formatted = address << 1 ^ READ_WRITE_BYTE;
 
+    noInterrupts();
     spi->beginTransaction(this->settings);
     digitalWrite(this->NSS_CONFIG_PIN, 0);
 
     spi->transfer(formatted);        // Enable READ mode at address
     byte read = spi->transfer(0x00); // Write nothing, but read
-    if (LOG_DEBUG)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("Read: %02X (%02X) = %02X \n", address, formatted, read);
     }
     digitalWrite(this->NSS_CONFIG_PIN, 1);
 
     spi->endTransaction();
+
+    interrupts();
     return read;
 };
 void SX1211_Driver::sendConfig()
 {
+
+    noInterrupts();
     spi->beginTransaction(this->settings);
     for (byte address = 0; address < 32; address++)
     {
         writeConfig(address, config[address]);
     }
     spi->endTransaction();
+
+    interrupts();
 };
 
 void SX1211_Driver::writeConfig(byte address, byte value)
 {
+
     byte formatted = address << 1;
     digitalWrite(this->NSS_CONFIG_PIN, 0);
+    noInterrupts();
     delayMicroseconds(4);
 
     spi->transfer(formatted); // Enable WRITE mode at address
     byte previousValue = spi->transfer(value);
-    if (LOG_DEBUG)
+    
+
+    if (DEBUG_SX_1211)
     {
-        Serial.printf("Write: %02X (%02X) = %02X -> %02X \n", address, formatted, previousValue, value);
+        Serial.printf("Write Config: %02X (%02X) = %02X -> %02X \n", address, formatted, previousValue, value);
+    } else {
+        delay(5);
     }
     digitalWrite(this->NSS_CONFIG_PIN, 1);
+    interrupts();
     delayMicroseconds(4);
+
 };
 
 void SX1211_Driver::setMode(uint8_t mode)
@@ -157,9 +175,9 @@ void SX1211_Driver::setMode(uint8_t mode)
     byte current = config[0];
     current &= 0b00011111;
     current += mode << 5;
-    if (LOG_DEBUG)
+    // if (DEBUG_SX_1211)
     {
-        Serial.printf("Set mode to %02X", mode);
+        Serial.printf("Set mode to %02X\n", mode);
     }
 
     spi->beginTransaction(this->settings);
@@ -169,9 +187,10 @@ void SX1211_Driver::setMode(uint8_t mode)
 
 bool SX1211_Driver::hasAvailableData()
 {
-    // if(LOG_DEBUG)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("IRQ status: 0: %d, 1: %d\n", notFifoEmpty, crcOk);
+        Serial.printf("PIN status: 0: %d, 1: %d\n", digitalRead(IRQ_0_PIN), digitalRead(IRQ_1_PIN));
     }
     return crcOk == 1;
 };
@@ -180,10 +199,13 @@ byte SX1211_Driver::readWriteData(byte value)
 {
     digitalWrite(this->NSS_CONFIG_PIN, 1);
     digitalWrite(this->NSS_DATA_PIN, 0);
+
+    // delayMicroseconds(4000);
     byte received = spi->transfer(value);
     digitalWrite(this->NSS_DATA_PIN, 1);
     digitalWrite(this->NSS_CONFIG_PIN, 1);
 
+    // delayMicroseconds(4000);
     return received;
 };
 
@@ -214,7 +236,7 @@ byte SX1211_Driver::receive(byte *received)
     delay(1);
     set_fifo_stby_access(true);
     delay(1);
-    if (LOG_DEBUG)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("Received at (crc_ok: %d,crc_on: %d) %d dB: ", (crc_status & SX_1211_PKT3_CRC_STATUS) == SX_1211_PKT3_CRC_STATUS, (crc_status & SX_1211_PKT3_CRC_ON) == SX_1211_PKT3_CRC_ON, rssi);
     }
@@ -225,59 +247,59 @@ byte SX1211_Driver::receive(byte *received)
         spi->beginTransaction(settings);
         int data = readWriteData(0x00);
 
-        if (LOG_DEBUG)
+        if (DEBUG_SX_1211)
         {
             Serial.printf("%02X ", data);
-            received[i] = data;
         }
+        received[i] = data;
         spi->endTransaction();
         i++;
     }
-    if (LOG_DEBUG)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("\n");
     }
     return i - 1;
 };
 
-
 void SX1211_Driver::transmit(byte size, byte *payload)
 {
+
     // prepare transmit
     setMode(SX1211_MODE_STBY);
     set_fifo_stby_access(false);
-
     spi->beginTransaction(settings);
-    // if (LOG_DEBUG)
+    // if (DEBUG_SX_1211)
     {
-        Serial.printf("Prepare transmit %d bytes to %02X\n", size, payload[0]);
+        Serial.printf("Prepare transmit %d bytes to %02X, SPI1CLK: %X \n", size, payload[0], SPI1CLK);
     }
+    noInterrupts();
     readWriteData(size);
     for (int i = 0; i < size; i++)
     {
         readWriteData(payload[i]);
-        // if (LOG_DEBUG)
+        if (DEBUG_SX_1211)
         {
             Serial.printf("%02X ", payload[i]);
         }
     }
 
     spi->endTransaction();
-    delay(40);
+    Serial.print("\n");
     setMode(SX1211_MODE_FS);
-    delay(10);
     setMode(SX1211_MODE_TX);
-    // if (LOG_DEBUG)
+    // if (DEBUG_SX_1211)
     {
-        Serial.printf("transmitting");
+        Serial.printf("transmitting...  ");
     }
+    interrupts();
     while (!crcOk)
     {
-        delay(10);
+        yield(); // This will prevent wdt reset
     }
-    // if (LOG_DEBUG)
+    // if (DEBUG_SX_1211)
     {
-        Serial.printf("transmittion done \n");
+        Serial.printf("done \n");
     }
     setMode(SX1211_MODE_STBY);
 };

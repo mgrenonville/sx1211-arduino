@@ -29,6 +29,7 @@ boolean mqttActive;
 
 WiFiManager wifiManager;
 Queue<String> transmitQueue = Queue<String>(1);
+Queue<String> networkIdQueue = Queue<String>(1);
 
 void connectToMqtt()
 {
@@ -144,10 +145,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
   {
     String networkId = doc["network_id"];
 
-    Serial.printf("Will set networkId to : %s", networkId.c_str());
-    helper::conversion::ByteBuffer networkIdXX = helper::conversion::unhexlify(networkId.c_str());
-    sx1211.setSyncWord(&networkIdXX[0], networkIdXX.size());
-    sx1211.sendConfig();
+    networkIdQueue.push(networkId);
     break;
   }
 
@@ -159,7 +157,6 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
     break;
   }
   case helper::json::LISTEN:
-
     mode = helper::json::LISTEN;
     break;
   }
@@ -182,6 +179,8 @@ void configureSX1211()
   pinMode(D5, OUTPUT);
   spi.begin();
   sx1211.begin(spi, D1, D0, D3, D2);
+  Serial.write("GO ! \n");
+  Serial.printf("success: %2d\n", success);
 
   sx1211.writeRawConfig(SX1211_REG_MCPARAM1, SX_1211_MC1_BAND_868 | SX_1211_MC1_RPS_SELECT_1 | SX_1211_MC1_VCO_TRIM_00 | SX_1211_MC1_SLEEP);
   // sx1211.writeRawConfig(SX1211_REG_MCPARAM2, 0x8C);
@@ -234,13 +233,24 @@ void configureSX1211()
   sx1211.sendConfig();
 };
 
+void showConfig()
+{
+  byte *configWritten = sx1211.readConfig();
+  Serial.write("Config: ");
+  for (byte address = 0; address < 32; address++)
+  {
+    Serial.printf("%02X", configWritten[address]);
+  }
+  Serial.write("\n");
+}
+
 void setup()
 {
 
   Serial.begin(115200);
 
-  wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
-  wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
+  // wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
+  // wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 
   mqttClient.onConnect(onMqttConnect);
   mqttClient.onDisconnect(onMqttDisconnect);
@@ -254,10 +264,27 @@ void setup()
   connectToWifi();
 
   configureSX1211();
+
+  byte network_id[] = {0x12, 0x34, 0x56, 0x78};
+  sx1211.setSyncWord(network_id, 4);
+  sx1211.sendConfig();
+  showConfig();
 }
 
 void loop()
 {
+  // transmitQueue.push(String("12345678"));
+
+  if (networkIdQueue.count() > 0)
+  {
+    showConfig();
+    String networkId = networkIdQueue.pop();
+    Serial.printf("Will set networkId to : %s", networkId.c_str());
+    helper::conversion::ByteBuffer networkIdXX = helper::conversion::unhexlify(networkId.c_str());
+    sx1211.setSyncWord(&networkIdXX[0], networkIdXX.size() - 1);
+    sx1211.sendConfig();
+    showConfig();
+  }
   if (mode == helper::json::LISTEN && mqttActive)
   {
     sx1211.setMode(SX1211_MODE_RX);
