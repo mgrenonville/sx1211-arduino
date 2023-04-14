@@ -174,7 +174,7 @@ void SX1211_Driver::setMode(uint8_t mode)
     byte current = config[0];
     current &= 0b00011111;
     current += mode << 5;
-    // if (DEBUG_SX_1211)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("Set mode to %02X\n", mode);
     }
@@ -268,7 +268,7 @@ void SX1211_Driver::transmit(byte size, byte *payload)
     setMode(SX1211_MODE_STBY);
     set_fifo_stby_access(false);
     spi->beginTransaction(settings);
-    // if (DEBUG_SX_1211)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("Prepare transmit %d bytes to %02X, SPI1CLK: %X \n", size, payload[0], SPI1CLK);
     }
@@ -287,7 +287,7 @@ void SX1211_Driver::transmit(byte size, byte *payload)
     Serial.print("\n");
     setMode(SX1211_MODE_FS);
     setMode(SX1211_MODE_TX);
-    // if (DEBUG_SX_1211)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("transmitting...  ");
     }
@@ -296,7 +296,7 @@ void SX1211_Driver::transmit(byte size, byte *payload)
     {
         yield(); // This will prevent wdt reset
     }
-    // if (DEBUG_SX_1211)
+    if (DEBUG_SX_1211)
     {
         Serial.printf("done \n");
     }

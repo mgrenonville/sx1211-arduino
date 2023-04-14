@@ -310,7 +310,8 @@ void loop()
   }
   else
   {
-    sx1211.setMode(SX1211_MODE_SLEEP);
+    sx1211.setMode(SX1211_MODE_STBY);
+    delay(1000);
   }
   if (transmitQueue.count() > 0)
   {
