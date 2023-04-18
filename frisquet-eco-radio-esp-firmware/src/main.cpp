@@ -5,6 +5,9 @@
 
 #include <Ticker.h>
 #include <AsyncMqttClient.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
 
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
@@ -31,8 +34,14 @@ WiFiManager wifiManager;
 Queue<String> transmitQueue = Queue<String>(1);
 Queue<String> networkIdQueue = Queue<String>(1);
 
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
+
+
 void connectToMqtt()
 {
+  Serial.print(timeClient.getFormattedTime());
+
   Serial.println("Connecting to MQTT...");
   mqttClient.connect();
 }
@@ -60,6 +69,8 @@ void connectToWifi()
 
 void onWifiConnect(const WiFiEventStationModeGotIP &event)
 {
+  Serial.print(timeClient.getFormattedTime());
+
   Serial.println("Connected to Wi-Fi.");
   connectToMqtt();
 }
@@ -84,7 +95,8 @@ void onMqttConnect(bool sessionPresent)
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 {
-  Serial.println("Disconnected from MQTT.");
+  Serial.print(timeClient.getFormattedTime());
+  Serial.printf("- Disconnected from MQTT. %i\n", reason);
 
   mqttActive = false;
 
@@ -273,11 +285,18 @@ void setup()
   sx1211.setSyncWord(network_id, 4);
   sx1211.sendConfig();
   showConfig();
+
+  timeClient.begin();
 }
 
 void loop()
 {
   // transmitQueue.push(String("12345678"));
+
+  timeClient.update();
+  
+  // Serial.println(timeClient.getFormattedTime());
+  
 
   if (networkIdQueue.count() > 0)
   {

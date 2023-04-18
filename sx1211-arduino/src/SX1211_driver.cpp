@@ -88,7 +88,7 @@ void SX1211_Driver::setSyncWord(byte *syncword, byte syncword_size)
         rx3Value |= SX_1211_RX3_SYNC_SIZE_32;
         break;
     }
-    this->writeRawConfig(SX1211_REG_RXPARAM3, rx3Value);    
+    this->writeRawConfig(SX1211_REG_RXPARAM3, rx3Value);
 };
 
 void SX1211_Driver::setAddress(byte addr)
@@ -114,7 +114,6 @@ byte SX1211_Driver::readConfigByte(byte address)
 {
     byte formatted = address << 1 ^ READ_WRITE_BYTE;
 
-    noInterrupts();
     spi->beginTransaction(this->settings);
     digitalWrite(this->NSS_CONFIG_PIN, 0);
 
@@ -128,21 +127,17 @@ byte SX1211_Driver::readConfigByte(byte address)
 
     spi->endTransaction();
 
-    interrupts();
     return read;
 };
 void SX1211_Driver::sendConfig()
 {
 
-    noInterrupts();
     spi->beginTransaction(this->settings);
     for (byte address = 0; address < 32; address++)
     {
         writeConfig(address, config[address]);
     }
     spi->endTransaction();
-
-    interrupts();
 };
 
 void SX1211_Driver::writeConfig(byte address, byte value)
@@ -150,23 +145,23 @@ void SX1211_Driver::writeConfig(byte address, byte value)
 
     byte formatted = address << 1;
     digitalWrite(this->NSS_CONFIG_PIN, 0);
-    noInterrupts();
+
     delayMicroseconds(4);
 
     spi->transfer(formatted); // Enable WRITE mode at address
     byte previousValue = spi->transfer(value);
-    
 
     if (DEBUG_SX_1211)
     {
         Serial.printf("Write Config: %02X (%02X) = %02X -> %02X \n", address, formatted, previousValue, value);
-    } else {
+    }
+    else
+    {
         delay(5);
     }
     digitalWrite(this->NSS_CONFIG_PIN, 1);
-    interrupts();
-    delayMicroseconds(4);
 
+    delayMicroseconds(4);
 };
 
 void SX1211_Driver::setMode(uint8_t mode)
@@ -272,7 +267,7 @@ void SX1211_Driver::transmit(byte size, byte *payload)
     {
         Serial.printf("Prepare transmit %d bytes to %02X, SPI1CLK: %X \n", size, payload[0], SPI1CLK);
     }
-    noInterrupts();
+
     readWriteData(size);
     for (int i = 0; i < size; i++)
     {
@@ -291,7 +286,7 @@ void SX1211_Driver::transmit(byte size, byte *payload)
     {
         Serial.printf("transmitting...  ");
     }
-    interrupts();
+
     while (!crcOk)
     {
         yield(); // This will prevent wdt reset
