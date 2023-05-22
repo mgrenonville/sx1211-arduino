@@ -2,9 +2,27 @@
 #include <SPI.h>
 
 SX1211_Driver sx1211;
+#if defined(ESP32)
+
+#define SCK 6
+#define MISO 5
+#define MOSI 4
+#define NSS_CONFIG 19
+#define NSS_DATA 18
+#define IRQ0 8
+#define IRQ1 9
+
+#else
+
 #define SCK D5
 #define MISO D6
 #define MOSI D7
+#define NSS_CONFIG D1
+#define NSS_DATA D0
+#define IRQ0 D3
+#define IRQ1 D2
+
+#endif
 
 SPIClass spi;
 
@@ -23,13 +41,18 @@ void setup()
 {
     Serial.begin(115200);
     delay(6000);
-    boolean success = spi.pins(SCK, MISO, MOSI, 0);
 
+#if defined(ESP32) == 0
+    boolean success = spi.pins(SCK, MISO, MOSI, 0);
     pinMode(D6, INPUT);
     pinMode(D7, OUTPUT);
     pinMode(D5, OUTPUT);
+    #else
+    boolean success = true;
+#endif
     spi.begin();
-    sx1211.begin(spi, D1, D0, D3, D2);
+    
+    sx1211.begin(&spi, NSS_CONFIG, NSS_DATA, IRQ0, IRQ1);
     delay(1000);
     Serial.write("GO ! \n");
     Serial.printf("success: %2d\n", success);

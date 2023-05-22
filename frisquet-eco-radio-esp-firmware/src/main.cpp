@@ -19,17 +19,11 @@
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 
-#if defined(ESP32)
-
-#else
-WiFiEventHandler wifiConnectHandler;
-WiFiEventHandler wifiDisconnectHandler;
-#endif
 Ticker wifiReconnectTimer;
 
 SX1211_Driver sx1211;
 
-SPIClass spi;
+SPIClass * spi = NULL;
 
 helper::json::MqttMessageType mode;
 boolean mqttActive;
@@ -94,6 +88,27 @@ void connectToWifi()
   // }
 }
 
+#if defined(ESP32)
+
+#define SX_1211_SCK SCK
+#define SX_1211_MISO MISO
+#define SX_1211_MOSI MOSI
+#define NSS_CONFIG 2
+#define NSS_DATA 3
+#define IRQ0 0
+#define IRQ1 1
+
+#else
+#define SX_1211_SCK D5
+#define SX_1211_MISO D6
+#define SX_1211_MOSI D7
+#define NSS_CONFIG D1
+#define NSS_DATA D0
+#define IRQ0 D3
+#define IRQ1 D2
+
+WiFiEventHandler wifiConnectHandler;
+WiFiEventHandler wifiDisconnectHandler;
 void onWifiConnect(const WiFiEventStationModeGotIP &event)
 {
   Serial.print(timeClient.getFormattedTime());
@@ -108,6 +123,8 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
   mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
   wifiReconnectTimer.once(2, connectToWifi);
 }
+
+#endif
 
 void onMqttConnect(bool sessionPresent)
 {
@@ -211,15 +228,24 @@ void onMqttPublish(uint16_t packetId)
 void configureSX1211()
 {
 
-  boolean success = spi.pins(D5, D6, D7, 0);
+#if defined(ESP32)
 
-  pinMode(D6, INPUT);
-  pinMode(D7, OUTPUT);
-  pinMode(D5, OUTPUT);
-  spi.begin();
-  sx1211.begin(spi, D1, D0, D3, D2);
-  Serial.write("GO ! \n");
-  Serial.printf("success: %2d\n", success);
+  boolean success = true;
+  spi = new SPIClass(0);
+  spi->begin(SX_1211_SCK, SX_1211_MISO, SX_1211_MOSI);
+  // spi->setHwCs(false);
+#else
+  pinMode(SX_1211_MISO, INPUT);
+  pinMode(SX_1211_MOSI, OUTPUT);
+  pinMode(SX_1211_SCK, OUTPUT);
+  boolean success = spi->pins(SX_1211_SCK, SX_1211_MISO, SX_1211_MOSI, 0);
+  spi->begin();
+#endif
+
+  // Serial.printf("SPI Info: _spi:%p", spi->_spi);
+  
+  sx1211.begin(spi, NSS_CONFIG, NSS_DATA, IRQ0, IRQ1);
+  
 
   sx1211.writeRawConfig(SX1211_REG_MCPARAM1, SX_1211_MC1_BAND_868 | SX_1211_MC1_RPS_SELECT_1 | SX_1211_MC1_VCO_TRIM_00 | SX_1211_MC1_SLEEP);
   // sx1211.writeRawConfig(SX1211_REG_MCPARAM2, 0x8C);

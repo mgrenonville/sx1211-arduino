@@ -455,7 +455,7 @@ class SX1211_Driver
 {
 
 public:
-    void begin(SPIClass &spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DATA_PIN, uint8_t IRQ_0_PIN, uint8_t IRQ_1_PIN);
+    void begin(SPIClass * spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DATA_PIN, uint8_t IRQ_0_PIN, uint8_t IRQ_1_PIN);
     void writeRawConfig(byte address, byte value);
 
     byte *readConfig();
