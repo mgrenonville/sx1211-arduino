@@ -451,6 +451,10 @@
 #define SX_1211_PKT4_FIFO_STANDBY_WRITE 0x00
 #define SX_1211_PKT4_FIFO_STANDBY_READ 0x40
 
+
+#define SX_1211_TS_FS_us 800
+#define SX_1211_TS_FS_TO_TR_us 500
+#define SX_1211_TS_FS_TO_RE_us 500
 class SX1211_Driver
 {
 
@@ -491,6 +495,7 @@ private:
     byte readWriteData(byte value);
 
     void set_fifo_stby_access(bool value);
+    void setFifoThreshold(uint8 size);
 };
 
 #endif

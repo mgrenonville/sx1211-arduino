@@ -80,7 +80,7 @@ void SX1211_Driver::begin(SPIClass *_spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DA
     this->crcOk = digitalRead(IRQ_1_PIN);
 
     // 1052673 / 2 = ~500khz CLK, looks like frisquet
-    settings = SPISettings(1052673 / 2 / 2 / 2, MSBFIRST, SPI_MODE0);
+    settings = SPISettings(1052673 / 2, MSBFIRST, SPI_MODE0);
 
 
 #if defined(DEBUG_SX_1211)
@@ -89,7 +89,6 @@ void SX1211_Driver::begin(SPIClass *_spi, uint8_t NSS_CONFIG_PIN, uint8_t NSS_DA
     // uint32_t apb_freq = getApbFrequency();
     // uint32_t minFreq = ClkRegToFreq((spiClk_t *)&minFreqReg);
     // Serial.printf("freq to div: %08x , minFreq:%08x\n", spiFrequencyToClockDiv(1 / 2), minFreqReg);
-
     Serial.printf("IRQ1 is interruptable ? %d", digitalPinToInterrupt(IRQ_1_PIN) != NOT_AN_INTERRUPT);
 #endif
     readConfig();
@@ -184,12 +183,14 @@ void SX1211_Driver::writeConfig(byte address, byte value)
     spi->transfer(formatted); // Enable WRITE mode at address
     byte previousValue = spi->transfer(value);
 
-#if defined(DEBUG_SX_1211)
-    Serial.printf("Write Config: %02X (%02X) = %02X -> %02X \n", address, formatted, previousValue, value);
-#else
-
-    delay(5);
-#endif
+    if (DEBUG_SX_1211_TRACE)
+    {
+        Serial.printf("Write Config: %02X (%02X) = %02X -> %02X \n", address, formatted, previousValue, value);
+    }
+    else
+    {
+        delay(5);
+    }
     digitalWrite(this->NSS_CONFIG_PIN, 1);
 
     delayMicroseconds(4);
@@ -211,11 +212,11 @@ void SX1211_Driver::setMode(uint8_t mode)
 
 bool SX1211_Driver::hasAvailableData()
 {
-#if defined(DEBUG_SX_1211)
-    Serial.printf("IRQ status: 0: %d, 1: %d\n", notFifoEmpty, crcOk);
-    Serial.printf("PIN status: 0: %d, 1: %d\n", digitalRead(IRQ_0_PIN), digitalRead(IRQ_1_PIN));
-#endif
-
+    if (DEBUG_SX_1211_TRACE)
+    {
+        Serial.printf("IRQ status: 0: %d, 1: %d\n", notFifoEmpty, crcOk);
+        Serial.printf("PIN status: 0: %d, 1: %d\n", digitalRead(IRQ_0_PIN), digitalRead(IRQ_1_PIN));
+    }
     return crcOk == 1;
 };
 
@@ -233,6 +234,20 @@ byte SX1211_Driver::readWriteData(byte value)
     return received;
 };
 
+void SX1211_Driver::setFifoThreshold(uint8 size)
+{
+    byte current = config[SX1211_REG_MCPARAM6];
+    byte newValue = current & 0b11100000 + size - 1;
+    if (DEBUG_SX_1211)
+    {
+        Serial.printf("Set FIFO threshold to %d (Register SX1211_REG_MCPARAM6 from %02X to %02X)\n", size, current, newValue);
+    }
+    spi->beginTransaction(this->settings);
+    writeConfig(SX1211_REG_MCPARAM6, newValue);
+    spi->endTransaction();
+    config[SX1211_REG_MCPARAM6] = newValue;
+
+}
 void SX1211_Driver::set_fifo_stby_access(bool value)
 {
     spi->beginTransaction(this->settings);
@@ -290,29 +305,39 @@ void SX1211_Driver::transmit(byte size, byte *payload)
 
     // prepare transmit
     setMode(SX1211_MODE_STBY);
+    setFifoThreshold(size - 1);
     set_fifo_stby_access(false);
     spi->beginTransaction(settings);
-
-#if defined(DEBUG_SX_1211)
-    Serial.printf("Prepare transmit %d bytes to %02X\n", size, payload[0]);
-#endif
-
+    if (DEBUG_SX_1211)
+    {
+        Serial.printf("Prepare transmit %d bytes to %02X\n", size, payload[0]);
+    }
     readWriteData(size);
     for (int i = 0; i < size; i++)
     {
         readWriteData(payload[i]);
-#if defined(DEBUG_SX_1211)
-        Serial.printf("%02X ", payload[i]);
-#endif
+    }
+    spi->endTransaction();
+    if (DEBUG_SX_1211)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            readWriteData(payload[i]);
+
+            Serial.printf("%02X ", payload[i]);
+        }
+        Serial.print("\n");
     }
 
-    spi->endTransaction();
-    Serial.print("\n");
     setMode(SX1211_MODE_FS);
+    delayMicroseconds(SX_1211_TS_FS_us);
     setMode(SX1211_MODE_TX);
-#if defined(DEBUG_SX_1211)
-    Serial.printf("transmitting...  ");
-#endif
+    delayMicroseconds(SX_1211_TS_FS_TO_TR_us);
+
+    if (DEBUG_SX_1211)
+    {
+        Serial.printf("transmitting...  ");
+    }
 
     while (!crcOk)
     {

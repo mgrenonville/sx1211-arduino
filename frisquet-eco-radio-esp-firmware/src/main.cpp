@@ -261,7 +261,7 @@ void configureSX1211()
   sx1211.writeRawConfig(SX1211_REG_OOKFLOORTHRESH, SX_1211_OOKFLOORTHRESH_VALUE);
 
   // sx1211.writeRawConfig(SX1211_REG_MCPARAM6, 0xCF);
-  sx1211.writeRawConfig(SX1211_REG_MCPARAM6, SX_1211_MC6_FIFO_SIZE_64 | SX_1211_MC6_FIFO_THRESH_VALUE);
+  sx1211.writeRawConfig(SX1211_REG_MCPARAM6, SX_1211_MC6_FIFO_SIZE_64 + 0x0F /* SX_1211_MC6_FIFO_THRESH_VALUE */);
 
   // Configured values for my usecase
   sx1211.writeRawConfig(SX1211_REG_R1, 0x7F);
@@ -277,7 +277,11 @@ void configureSX1211()
   // sx1211.writeRawConfig(SX1211_REG_IRQPARAM1, 0x88);
   sx1211.writeRawConfig(SX1211_REG_IRQPARAM1, SX_1211_IRQ0_RX_STDBY_FIFOEMPTY | SX_1211_IRQ1_RX_STDBY_CRCOK | SX_1211_IRQ1_TX_TXDONE);
 
-  sx1211.writeRawConfig(SX1211_REG_IRQPARAM2, 0x19);
+  // sx1211.writeRawConfig(SX1211_REG_IRQPARAM2, 0x19);
+  //  Start transmission when the number of bytes in FIFO is greater than or
+  // equal to the threshold set by MCParam_Fifo_thresh parameter (Cf section
+  // 5.2.2.3), IRQ_0 mapped to Fifo_threshold (
+  sx1211.writeRawConfig(SX1211_REG_IRQPARAM2, 0x19 + 0x16);
 
   sx1211.writeRawConfig(SX1211_REG_RSSIIRQTHRESH, 0x82);
   sx1211.writeRawConfig(SX1211_REG_RXPARAM1, 0xE3);
@@ -315,7 +319,7 @@ void showConfig()
 
 void setup()
 {
-
+  pinMode(D4, INPUT);
   Serial.begin(115200);
 
   // wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
@@ -404,7 +408,9 @@ void loop()
   {
     String payloadStr = transmitQueue.pop();
     helper::conversion::ByteBuffer payload = helper::conversion::unhexlify(payloadStr.c_str());
-    sx1211.transmit(payload[0], &payload[1]);
+    byte *str = payload.data();
+
+    sx1211.transmit(str[0], &str[1]);
   }
 
   ArduinoOTA.handle();
