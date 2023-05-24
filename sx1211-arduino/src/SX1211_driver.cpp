@@ -252,7 +252,7 @@ void SX1211_Driver::set_fifo_stby_access(bool value)
 byte SX1211_Driver::receive(byte *received)
 {
 
-    setMode(SX1211_MODE_STBY);
+    setMode(SX1211_MODE_RX);
 
     byte rssi = readConfigByte(SX1211_REG_RSSIVALUE);
     byte crc_status = readConfigByte(SX1211_REG_PKTPARAM3);

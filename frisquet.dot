@@ -1,0 +1,284 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__frisquet {
+		label="Frisquet";
+		graph[style=dotted];
+
+		frisquet__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="payloads_pos">0</TD><TD PORT="payloads_size">...</TD><TD>Payload</TD><TD PORT="payloads_type">payloads</TD></TR>
+			<TR><TD COLSPAN="4" PORT="payloads__repeat">repeat to end of stream</TD></TR>
+		</TABLE>>];
+		subgraph cluster__unknown_msg_response {
+			label="Frisquet::UnknownMsgResponse";
+			graph[style=dotted];
+
+			unknown_msg_response__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__init_empty_message {
+			label="Frisquet::InitEmptyMessage";
+			graph[style=dotted];
+
+			init_empty_message__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__unknown_msg {
+			label="Frisquet::UnknownMsg";
+			graph[style=dotted];
+
+			unknown_msg__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__connect {
+			label="Frisquet::Connect";
+			graph[style=dotted];
+
+			connect__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="connect_data_pos">0</TD><TD PORT="connect_data_size">...</TD><TD>switch (_parent.length)</TD><TD PORT="connect_data_type">connect_data</TD></TR>
+			</TABLE>>];
+connect__seq_connect_data_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>_</TD><TD PORT="case0">DummyConnect</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__sonde {
+			label="Frisquet::Sonde";
+			graph[style=dotted];
+
+			sonde__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="sonde_data_pos">0</TD><TD PORT="sonde_data_size">...</TD><TD>switch (_parent.length)</TD><TD PORT="sonde_data_type">sonde_data</TD></TR>
+			</TABLE>>];
+sonde__seq_sonde_data_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>17</TD><TD PORT="case0">SondeTemperature</TD></TR>
+	<TR><TD>_</TD><TD PORT="case1">DummySonde</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__payload {
+			label="Frisquet::Payload";
+			graph[style=dotted];
+
+			payload__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="length_pos">0</TD><TD PORT="length_size">1</TD><TD>u1</TD><TD PORT="length_type">length</TD></TR>
+				<TR><TD PORT="to_addr_pos">1</TD><TD PORT="to_addr_size">1</TD><TD>u1</TD><TD PORT="to_addr_type">to_addr</TD></TR>
+				<TR><TD PORT="from_addr_pos">2</TD><TD PORT="from_addr_size">1</TD><TD>u1</TD><TD PORT="from_addr_type">from_addr</TD></TR>
+				<TR><TD PORT="request_id_pos">3</TD><TD PORT="request_id_size">2</TD><TD>u2le</TD><TD PORT="request_id_type">request_id</TD></TR>
+				<TR><TD PORT="req_or_answer_pos">5</TD><TD PORT="req_or_answer_size">1</TD><TD>u1</TD><TD PORT="req_or_answer_type">req_or_answer</TD></TR>
+				<TR><TD PORT="msg_type_pos">6</TD><TD PORT="msg_type_size">1</TD><TD>u1</TD><TD PORT="msg_type_type">msg_type</TD></TR>
+				<TR><TD PORT="payload_data_pos">7</TD><TD PORT="payload_data_size">...</TD><TD>switch (from_addr)</TD><TD PORT="payload_data_type">payload_data</TD></TR>
+			</TABLE>>];
+			payload__inst__payload_data_size [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">id</TD><TD BGCOLOR="#E0FFE0">value</TD></TR>
+				<TR><TD>payload_data_size</TD><TD>(length - 6)</TD></TR>
+			</TABLE>>];
+payload__seq_payload_data_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>10</TD><TD PORT="case0">Satellite</TD></TR>
+	<TR><TD>32</TD><TD PORT="case1">Sonde</TD></TR>
+	<TR><TD>126</TD><TD PORT="case2">Connect</TD></TR>
+	<TR><TD>8</TD><TD PORT="case3">Satellite</TD></TR>
+	<TR><TD>9</TD><TD PORT="case4">Satellite</TD></TR>
+	<TR><TD>128</TD><TD PORT="case5">Chaudiere</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__init_empty_message_response {
+			label="Frisquet::InitEmptyMessageResponse";
+			graph[style=dotted];
+
+			init_empty_message_response__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__chaudiere {
+			label="Frisquet::Chaudiere";
+			graph[style=dotted];
+
+			chaudiere__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="chaudiere_data_pos">0</TD><TD PORT="chaudiere_data_size">...</TD><TD>switch (_parent.length)</TD><TD PORT="chaudiere_data_type">chaudiere_data</TD></TR>
+			</TABLE>>];
+chaudiere__seq_chaudiere_data_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>6</TD><TD PORT="case0">InitEmptyMessageResponse</TD></TR>
+	<TR><TD>55</TD><TD PORT="case1">UnknownMsgResponse</TD></TR>
+	<TR><TD>15</TD><TD PORT="case2">SondeResponse</TD></TR>
+	<TR><TD>_</TD><TD PORT="case3">DummyChaudiere</TD></TR>
+	<TR><TD>49</TD><TD PORT="case4">SetTemperatureResponse</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__satellite {
+			label="Frisquet::Satellite";
+			graph[style=dotted];
+
+			satellite__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="satellite_data_pos">0</TD><TD PORT="satellite_data_size">...</TD><TD>switch (_parent.length)</TD><TD PORT="satellite_data_type">satellite_data</TD></TR>
+			</TABLE>>];
+satellite__seq_satellite_data_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>10</TD><TD PORT="case0">UnknownMsg</TD></TR>
+	<TR><TD>17</TD><TD PORT="case1">Init</TD></TR>
+	<TR><TD>23</TD><TD PORT="case2">SetTemperature</TD></TR>
+	<TR><TD>8</TD><TD PORT="case3">InitEmptyMessage</TD></TR>
+	<TR><TD>_</TD><TD PORT="case4">DummySatellite</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__sonde_response {
+			label="Frisquet::SondeResponse";
+			graph[style=dotted];
+
+			sonde_response__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="unknown_start_pos">0</TD><TD PORT="unknown_start_size">1</TD><TD>u1</TD><TD PORT="unknown_start_type">unknown_start</TD></TR>
+				<TR><TD PORT="year_pos">1</TD><TD PORT="year_size">1</TD><TD>u1</TD><TD PORT="year_type">year</TD></TR>
+				<TR><TD PORT="month_pos">2</TD><TD PORT="month_size">1</TD><TD>u1</TD><TD PORT="month_type">month</TD></TR>
+				<TR><TD PORT="day_pos">3</TD><TD PORT="day_size">1</TD><TD>u1</TD><TD PORT="day_type">day</TD></TR>
+				<TR><TD PORT="hour_pos">4</TD><TD PORT="hour_size">1</TD><TD>u1</TD><TD PORT="hour_type">hour</TD></TR>
+				<TR><TD PORT="minute_pos">5</TD><TD PORT="minute_size">1</TD><TD>u1</TD><TD PORT="minute_type">minute</TD></TR>
+				<TR><TD PORT="second_pos">6</TD><TD PORT="second_size">1</TD><TD>u1</TD><TD PORT="second_type">second</TD></TR>
+				<TR><TD PORT="data_pos">7</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__dummy_chaudiere {
+			label="Frisquet::DummyChaudiere";
+			graph[style=dotted];
+
+			dummy_chaudiere__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__dummy_satellite {
+			label="Frisquet::DummySatellite";
+			graph[style=dotted];
+
+			dummy_satellite__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__set_temperature {
+			label="Frisquet::SetTemperature";
+			graph[style=dotted];
+
+			set_temperature__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="static_part_start_pos">0</TD><TD PORT="static_part_start_size">3</TD><TD></TD><TD PORT="static_part_start_type">static_part_start</TD></TR>
+				<TR><TD PORT="unknown1_pos">3</TD><TD PORT="unknown1_size">1</TD><TD>u1</TD><TD PORT="unknown1_type">unknown1</TD></TR>
+				<TR><TD PORT="static_part_end_pos">4</TD><TD PORT="static_part_end_size">3</TD><TD></TD><TD PORT="static_part_end_type">static_part_end</TD></TR>
+				<TR><TD PORT="unknown2_pos">7</TD><TD PORT="unknown2_size">1</TD><TD>u1</TD><TD PORT="unknown2_type">unknown2</TD></TR>
+				<TR><TD PORT="message_static_part_pos">8</TD><TD PORT="message_static_part_size">2</TD><TD></TD><TD PORT="message_static_part_type">message_static_part</TD></TR>
+				<TR><TD PORT="temperature_pos">10</TD><TD PORT="temperature_size">2</TD><TD>u2le</TD><TD PORT="temperature_type">temperature</TD></TR>
+				<TR><TD PORT="consigne_pos">12</TD><TD PORT="consigne_size">2</TD><TD>u2le</TD><TD PORT="consigne_type">consigne</TD></TR>
+				<TR><TD PORT="unknown_mode1_pos">14</TD><TD PORT="unknown_mode1_size">3b</TD><TD>b3</TD><TD PORT="unknown_mode1_type">unknown_mode1</TD></TR>
+				<TR><TD PORT="hors_gel_pos">14:3</TD><TD PORT="hors_gel_size">1b</TD><TD>BitsType1(BigBitEndian)</TD><TD PORT="hors_gel_type">hors_gel</TD></TR>
+				<TR><TD PORT="unknown_mode2_pos">14:4</TD><TD PORT="unknown_mode2_size">2b</TD><TD>b2</TD><TD PORT="unknown_mode2_type">unknown_mode2</TD></TR>
+				<TR><TD PORT="derogation_pos">14:6</TD><TD PORT="derogation_size">1b</TD><TD>BitsType1(BigBitEndian)</TD><TD PORT="derogation_type">derogation</TD></TR>
+				<TR><TD PORT="soleil_pos">14:7</TD><TD PORT="soleil_size">1b</TD><TD>BitsType1(BigBitEndian)</TD><TD PORT="soleil_type">soleil</TD></TR>
+				<TR><TD PORT="signature_pos">15</TD><TD PORT="signature_size">2</TD><TD></TD><TD PORT="signature_type">signature</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__set_temperature_response {
+			label="Frisquet::SetTemperatureResponse";
+			graph[style=dotted];
+
+			set_temperature_response__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="unknown_start_pos">0</TD><TD PORT="unknown_start_size">2</TD><TD></TD><TD PORT="unknown_start_type">unknown_start</TD></TR>
+				<TR><TD PORT="temperature_exterieure_pos">2</TD><TD PORT="temperature_exterieure_size">2</TD><TD>u2le</TD><TD PORT="temperature_exterieure_type">temperature_exterieure</TD></TR>
+				<TR><TD PORT="year_pos">4</TD><TD PORT="year_size">1</TD><TD>u1</TD><TD PORT="year_type">year</TD></TR>
+				<TR><TD PORT="month_pos">5</TD><TD PORT="month_size">1</TD><TD>u1</TD><TD PORT="month_type">month</TD></TR>
+				<TR><TD PORT="day_pos">6</TD><TD PORT="day_size">1</TD><TD>u1</TD><TD PORT="day_type">day</TD></TR>
+				<TR><TD PORT="hour_pos">7</TD><TD PORT="hour_size">1</TD><TD>u1</TD><TD PORT="hour_type">hour</TD></TR>
+				<TR><TD PORT="minute_pos">8</TD><TD PORT="minute_size">1</TD><TD>u1</TD><TD PORT="minute_type">minute</TD></TR>
+				<TR><TD PORT="second_pos">9</TD><TD PORT="second_size">1</TD><TD>u1</TD><TD PORT="second_type">second</TD></TR>
+				<TR><TD PORT="unknown1_pos">10</TD><TD PORT="unknown1_size">3</TD><TD></TD><TD PORT="unknown1_type">unknown1</TD></TR>
+				<TR><TD PORT="temperature_pos">13</TD><TD PORT="temperature_size">2</TD><TD>u2le</TD><TD PORT="temperature_type">temperature</TD></TR>
+				<TR><TD PORT="consigne_pos">15</TD><TD PORT="consigne_size">2</TD><TD>u2le</TD><TD PORT="consigne_type">consigne</TD></TR>
+				<TR><TD PORT="unknown_conso_pos">17</TD><TD PORT="unknown_conso_size">2</TD><TD>u2le</TD><TD PORT="unknown_conso_type">unknown_conso</TD></TR>
+				<TR><TD PORT="signature_pos">19</TD><TD PORT="signature_size">3</TD><TD></TD><TD PORT="signature_type">signature</TD></TR>
+				<TR><TD PORT="static_part_2_pos">22</TD><TD PORT="static_part_2_size">19</TD><TD></TD><TD PORT="static_part_2_type">static_part_2</TD></TR>
+				<TR><TD PORT="remaining_data_pos">41</TD><TD PORT="remaining_data_size">⇲</TD><TD></TD><TD PORT="remaining_data_type">remaining_data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__dummy_sonde {
+			label="Frisquet::DummySonde";
+			graph[style=dotted];
+
+			dummy_sonde__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__init {
+			label="Frisquet::Init";
+			graph[style=dotted];
+
+			init__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="static_part_pos">0</TD><TD PORT="static_part_size">7</TD><TD></TD><TD PORT="static_part_type">static_part</TD></TR>
+				<TR><TD PORT="message_static_part_pos">7</TD><TD PORT="message_static_part_size">3</TD><TD></TD><TD PORT="message_static_part_type">message_static_part</TD></TR>
+				<TR><TD PORT="data_pos">10</TD><TD PORT="data_size">⇲</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__dummy_connect {
+			label="Frisquet::DummyConnect";
+			graph[style=dotted];
+
+			dummy_connect__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__sonde_temperature {
+			label="Frisquet::SondeTemperature";
+			graph[style=dotted];
+
+			sonde_temperature__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">9</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+				<TR><TD PORT="temperature_sign_pos">9</TD><TD PORT="temperature_sign_size">1</TD><TD>u1</TD><TD PORT="temperature_sign_type">temperature_sign</TD></TR>
+				<TR><TD PORT="temperature_pos">10</TD><TD PORT="temperature_size">1</TD><TD>u1</TD><TD PORT="temperature_type">temperature</TD></TR>
+			</TABLE>>];
+		}
+	}
+	frisquet__seq:payloads_type -> payload__seq [style=bold];
+	connect__seq:connect_data_type -> connect__seq_connect_data_switch [style=bold];
+	connect__seq_connect_data_switch:case0 -> dummy_connect__seq [style=bold];
+	payload__seq:length_type -> connect__seq:connect_data_type [color="#404040"];
+	sonde__seq:sonde_data_type -> sonde__seq_sonde_data_switch [style=bold];
+	sonde__seq_sonde_data_switch:case0 -> sonde_temperature__seq [style=bold];
+	sonde__seq_sonde_data_switch:case1 -> dummy_sonde__seq [style=bold];
+	payload__seq:length_type -> sonde__seq:sonde_data_type [color="#404040"];
+	payload__seq:payload_data_type -> payload__seq_payload_data_switch [style=bold];
+	payload__seq_payload_data_switch:case0 -> satellite__seq [style=bold];
+	payload__seq_payload_data_switch:case1 -> sonde__seq [style=bold];
+	payload__seq_payload_data_switch:case2 -> connect__seq [style=bold];
+	payload__seq_payload_data_switch:case3 -> satellite__seq [style=bold];
+	payload__seq_payload_data_switch:case4 -> satellite__seq [style=bold];
+	payload__seq_payload_data_switch:case5 -> chaudiere__seq [style=bold];
+	payload__seq:from_addr_type -> payload__seq:payload_data_type [color="#404040"];
+	payload__seq:length_type -> payload__inst__payload_data_size [color="#404040"];
+	chaudiere__seq:chaudiere_data_type -> chaudiere__seq_chaudiere_data_switch [style=bold];
+	chaudiere__seq_chaudiere_data_switch:case0 -> init_empty_message_response__seq [style=bold];
+	chaudiere__seq_chaudiere_data_switch:case1 -> unknown_msg_response__seq [style=bold];
+	chaudiere__seq_chaudiere_data_switch:case2 -> sonde_response__seq [style=bold];
+	chaudiere__seq_chaudiere_data_switch:case3 -> dummy_chaudiere__seq [style=bold];
+	chaudiere__seq_chaudiere_data_switch:case4 -> set_temperature_response__seq [style=bold];
+	payload__seq:length_type -> chaudiere__seq:chaudiere_data_type [color="#404040"];
+	satellite__seq:satellite_data_type -> satellite__seq_satellite_data_switch [style=bold];
+	satellite__seq_satellite_data_switch:case0 -> unknown_msg__seq [style=bold];
+	satellite__seq_satellite_data_switch:case1 -> init__seq [style=bold];
+	satellite__seq_satellite_data_switch:case2 -> set_temperature__seq [style=bold];
+	satellite__seq_satellite_data_switch:case3 -> init_empty_message__seq [style=bold];
+	satellite__seq_satellite_data_switch:case4 -> dummy_satellite__seq [style=bold];
+	payload__seq:length_type -> satellite__seq:satellite_data_type [color="#404040"];
+}

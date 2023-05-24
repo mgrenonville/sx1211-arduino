@@ -349,6 +349,7 @@ void setup()
 
 void loop()
 {
+
   // transmitQueue.push(String("12345678"));
 
   timeClient.update();
@@ -370,18 +371,28 @@ void loop()
     sx1211.setMode(SX1211_MODE_RX);
     if (sx1211.hasAvailableData())
     {
-      byte data[64];
+      byte data[90];
       byte read = sx1211.receive(data);
-      StaticJsonDocument<300> doc;
-      char payload[64 * 2];
-      for (int i = 0; i <= read; i++)
+
+      Serial.printf("Read: %d : \n", read);
+      if (read < 64)
       {
-        sprintf(payload + 2 * i, "%02X ", data[i]);
+
+        StaticJsonDocument<300> doc;
+        char payload[64 * 2];
+        for (int i = 0; i <= read; i++)
+        {
+          Serial.printf("%02X ", data[i]);
+          sprintf(payload + 2 * i, "%02X", data[i]);
+        }
+
+        Serial.println("\n Payload for json:");
+        Serial.println(payload);
+        doc["data"] = payload;
+        String output;
+        serializeJson(doc, output);
+        mqttClient.publish("frisquet/receive", 0, false, output.c_str(), output.length());
       }
-      doc["data"] = payload;
-      String output;
-      serializeJson(doc, output);
-      mqttClient.publish("frisquet/receive", 0, false, output.c_str(), output.length());
     }
   }
   else
