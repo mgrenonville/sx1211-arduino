@@ -132,7 +132,7 @@ void onMqttConnect(bool sessionPresent)
   Serial.println("Connected to MQTT.");
   Serial.print("Session present: ");
   Serial.println(sessionPresent);
-  uint16_t packetIdSub = mqttClient.subscribe("frisquet/command", 0);
+  uint16_t packetIdSub = mqttClient.subscribe("frisquet-esp32/command", 0);
   Serial.print("Subscribing at QoS 2, packetId: ");
   Serial.println(packetIdSub);
 }
@@ -235,6 +235,8 @@ void configureSX1211()
   spi->begin(SX_1211_SCK, SX_1211_MISO, SX_1211_MOSI);
   // spi->setHwCs(false);
 #else
+  pinMode(D4, INPUT);
+
   pinMode(SX_1211_MISO, INPUT);
   pinMode(SX_1211_MOSI, OUTPUT);
   pinMode(SX_1211_SCK, OUTPUT);
@@ -319,7 +321,6 @@ void showConfig()
 
 void setup()
 {
-  pinMode(D4, INPUT);
   Serial.begin(115200);
 
   // wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
@@ -395,7 +396,7 @@ void loop()
         doc["data"] = payload;
         String output;
         serializeJson(doc, output);
-        mqttClient.publish("frisquet/receive", 0, false, output.c_str(), output.length());
+        mqttClient.publish("frisquet-esp32/receive", 0, false, output.c_str(), output.length());
       }
     }
   }

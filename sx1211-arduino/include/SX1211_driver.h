@@ -495,7 +495,7 @@ private:
     byte readWriteData(byte value);
 
     void set_fifo_stby_access(bool value);
-    void setFifoThreshold(uint8 size);
+    void setFifoThreshold(byte size);
 };
 
 #endif

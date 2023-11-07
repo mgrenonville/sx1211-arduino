@@ -234,7 +234,7 @@ byte SX1211_Driver::readWriteData(byte value)
     return received;
 };
 
-void SX1211_Driver::setFifoThreshold(uint8 size)
+void SX1211_Driver::setFifoThreshold(byte size)
 {
     byte current = config[SX1211_REG_MCPARAM6];
     byte newValue = current & 0b11100000 + size - 1;
